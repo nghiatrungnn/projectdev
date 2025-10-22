@@ -1,0 +1,26 @@
+version: "3.8"
+services:
+  backend:
+    image: nghiatrung/backend:latest
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - DB_URL=${mongodb://127.0.0.1:27017/shop-pc-api}
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+
+  frontend:
+    image: nghiatrung/frontend:latest
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
