@@ -1,25 +1,63 @@
 version: "3.8"
+
 services:
-  backend:
-    image: nghiatrung/backend:latest
+  # ===================== MONGO DATABASE =====================
+  mongo:
+    image: mongo:6.0
+    container_name: mongo
     restart: always
-    environment:
-      - NODE_ENV=production
-      - DB_URL=${mongodb://127.0.0.1:27017/shop-pc-api}
     ports:
-      - "3000:3000"
+      - "27017:27017"                 # Cho phép truy cập MongoDB Compass qua mongodb://root:123@localhost:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 123
+    volumes:
+      - mongo_data:/data/db
     networks:
       - app-network
 
-  frontend:
-    image: nghiatrung/frontend:latest
+  # ===================== BACKEND SERVICE =====================
+  backend:
+    # --- DÙNG IMAGE CÓ SẴN TRÊN DOCKER HUB ---
+    image: nghiatrung/backend:latest
+    # --- HOẶC DÙNG SOURCE LOCAL ---
+    # build:
+    #   context: ./backend
+    #   dockerfile: Dockerfile
+    container_name: backend
     restart: always
-    ports:
-      - "80:80"
     depends_on:
-      - backend
+      - mongo
+    env_file:
+      - ./envs/backend.env            # chứa JWT_SECRET, PORT,...
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://root:123@mongo:27017/shop-pc-api?authSource=admin
+    ports:
+      - "4000:4000"                   # Map backend ra host (API)
     networks:
       - app-network
+
+  # ===================== FRONTEND SERVICE =====================
+  frontend:
+    # --- DÙNG IMAGE CÓ SẴN TRÊN DOCKER HUB ---
+    image: nghiatrung/frontend:latest
+    # --- HOẶC DÙNG SOURCE LOCAL ---
+    # build:
+    #   context: ./frontend
+    #   dockerfile: Dockerfile
+    container_name: frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"                       # Map website ra port 80
+    networks:
+      - app-network
+
+# ===================== VOLUMES & NETWORKS =====================
+volumes:
+  mongo_data:
 
 networks:
   app-network:
