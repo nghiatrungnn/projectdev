@@ -4,5 +4,6 @@ COPY package*.json ./
 RUN npm ci --production
 COPY . .
 ENV NODE_ENV=production
-EXPOSE 4000
-CMD ["node", "dist/server.js"]   # hoặc "npm", "start" tùy project
+EXPOSE 5000
+CMD ["npm", "start"]
+
